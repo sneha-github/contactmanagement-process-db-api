@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="putCommunicationFlow" doc:id="2c14b7a8-44e3-4590-aec2-e0b72e6405c2">
+	<logger level="INFO" doc:name="Logger" doc:id="2ae588af-9f80-450c-9dfc-acf834a16d1d" message="Call to System API Started"/>
+		<set-variable value="#[attributes.headers]" doc:name="headers" doc:id="2b91bf6b-d86e-4224-b5e1-c1b89e301012" variableName="headers"/>
+		<set-variable value="#[payload]" doc:name="payload" doc:id="cd4eb39d-8445-4bd3-9375-356074c63fd0" variableName="payload"/>
+		<set-variable value="#[payload.email]" doc:name="email" doc:id="b37bd559-ba03-4229-9ba4-e34ae00f0518" variableName="email"/>
+		<flow-ref doc:name="Flow Reference" doc:id="28c7cbe1-2e01-408d-b200-d9172d25f018" name="getContactDetails_Sub_Flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="45d0563b-d5fc-487b-a130-d4aa549003a1" message="#[output application/json
+---
+{
+	correlationId: vars.headers.'X-correlation-id',
+	sessionId: vars.headers.'X-session-id',
+	applicationName: app.name,
+	message: &quot;request received for getting all the contact details&quot;
+}]"/>
+		<ee:transform doc:name="Transform Message" doc:id="a327d130-1889-48a2-9102-97319e6d80c8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	communication: vars.payload.communication map ( communication , indexOfCommunication ) -> {
+		communicationType: communication.communicationType,
+		contactId: vars.contactId as Number,
+		value: communication.value,
+		preferred: communication.preferred
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="PUT" doc:name="Request" doc:id="72c8059e-bf0d-4fa4-8b4d-70ffd38e1b93" config-ref="Communication_SAPI_Request" path="${communicationSAPI.putCommunication.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="18255590-a61f-4d78-9d78-fefcae60f55c" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="df4c4415-cb23-4dd0-bbde-c7043b69b814" message="Call to System API finished"/>
+	</flow>
+	
+	</mule>

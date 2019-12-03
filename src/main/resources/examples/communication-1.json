@@ -1,0 +1,18 @@
+{
+  "communication": [
+    {
+      "communicationId": 4,
+      "contactId": 19,
+      "communicationType": "email",
+      "value": "bfe@sample.com",
+      "preferred": "true"
+    },
+    {
+      "communicationId": 5,
+      "contactId": 19,
+      "communicationType": "cell",
+      "value": "304-555-8282",
+      "preferred": "true"
+    }
+  ]
+}

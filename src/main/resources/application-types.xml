@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="Request" format="json">
+      <types:shape format="weave" example="examples/request.json"><![CDATA[%dw 2.0
+
+type Request = {|
+  identification: {|
+    firstName: String, 
+    lastName: String, 
+    dateofBirth: String, 
+    gender: String, 
+    title: String
+  |}, 
+  address: Array<{|    typeOfAddress: String,     number: String,     street: String,     unit: String,     city: String,     state: String,     zipcode: String  |}>, 
+  communication: Array<{|    typeofCommunication: String,     value: String,     preferred: Boolean  |}>
+|} {"example": "{\"identification\":{\"firstName\":\"Bob\",\"lastName\":\"Frederick\",\"dateofBirth\":\"06\/21\/1980\",\"gender\":\"M\",\"title\":\"Manager\"},\"address\":[{\"typeOfAddress\":\"home\",\"number\":\"1234\",\"street\":\"blah blah St\",\"unit\":\"1 a\",\"city\":\"Somewhere\",\"state\":\"WV\",\"zipcode\":\"12345\"}],\"communication\":[{\"typeofCommunication\":\"email\",\"value\":\"bfe@sample.com\",\"preferred\":true},{\"typeofCommunication\":\"cell\",\"value\":\"304-555-8282\"}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="contact" format="json">
+      <types:shape format="weave" example="examples/contact.json"><![CDATA[%dw 2.0
+
+type contact = {|
+  firstName: String, 
+  lastName: String, 
+  dob: String, 
+  gender: String, 
+  title: String, 
+  email: String
+|} {"example": "{\"firstName\":\"Bob\",\"lastName\":\"Frederick\",\"dob\":\"2015-05-23\",\"gender\":\"M\",\"title\":\"Manager\",\"email\":\"bfe@sample.com\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="address" format="json">
+      <types:shape format="weave" example="examples/address-1.json"><![CDATA[%dw 2.0
+
+type address = {|
+  address: Array<{|    addressId: Number {"typeId": "int"},     contactId: Number {"typeId": "int"},     addressType: String,     number: String,     street: String,     unit: String,     city: String,     state: String,     zipcode: String  |}>
+|} {"example": "{\"address\":[{\"addressId\":6,\"contactId\":19,\"addressType\":\"Home\",\"number\":\"1234\",\"street\":\"blah blah St\",\"unit\":\"1 a\",\"city\":\"Somewhere\",\"state\":\"WV\",\"zipcode\":\"12345\"}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="communication" format="json">
+      <types:shape format="weave" example="examples/communication-1.json"><![CDATA[%dw 2.0
+
+type communication = {|
+  communication: Array<{|    communicationId: Number {"typeId": "int"},     contactId: Number {"typeId": "int"},     communicationType: String,     value: String,     preferred: String  |}>
+|} {"example": "{\"communication\":[{\"communicationId\":4,\"contactId\":19,\"communicationType\":\"email\",\"value\":\"bfe@sample.com\",\"preferred\":\"true\"},{\"communicationId\":5,\"contactId\":19,\"communicationType\":\"cell\",\"value\":\"304-555-8282\",\"preferred\":\"true\"}]}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#b6957880-5bb9-41a0-9eeb-21ef646692e2">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Request"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="contact"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#feb0de99-2d62-4437-95f3-a3497bf599fc">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="payload" type="Request"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="address"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#eea1411a-7db1-4bd6-88ae-eba7d43295b1">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="payload" type="Request"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="communication"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#cce62835-6e38-4ba9-8939-edff2f6c7fee">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="Request"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="contact"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#b5655ffb-b362-4fed-98c9-5c04075a322c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="payload" type="Request"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="address"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a327d130-1889-48a2-9102-97319e6d80c8">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="payload" type="Request"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="communication"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#0ef8d131-dec0-4aba-b082-16ef31371ebb">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="addressResponse" type="address"/>
+          <types:variable name="communicationResponse" type="communication"/>
+          <types:variable name="responseContact" type="contact"/>
+        </types:variables>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="Request"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

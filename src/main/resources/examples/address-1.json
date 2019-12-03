@@ -1,0 +1,15 @@
+{
+  "address": [
+    {
+      "addressId": 6,
+      "contactId": 19,
+      "addressType": "Home",
+      "number": "1234",
+      "street": "blah blah St",
+      "unit": "1 a",
+      "city": "Somewhere",
+      "state": "WV",
+      "zipcode": "12345"
+    }
+  ]
+}

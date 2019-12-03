@@ -1,0 +1,31 @@
+{
+  "identification": {
+    "firstName": "Bob",
+    "lastName": "Frederick",
+    "dateofBirth": "06/21/1980",
+    "gender": "M",
+    "title": "Manager"
+  },
+  "address": [
+    {
+      "typeOfAddress": "home",
+      "number": "1234",
+      "street": "blah blah St",
+      "unit": "1 a",
+      "city": "Somewhere",
+      "state": "WV",
+      "zipcode": "12345"
+    }
+  ],
+  "communication": [
+    {
+      "typeofCommunication": "email",
+      "value": "bfe@sample.com",
+      "preferred": true
+    },
+    {
+      "typeofCommunication": "cell",
+      "value": "304-555-8282"
+    }
+  ]
+}

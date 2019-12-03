@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="putContactFlow" doc:id="988e84f5-47e0-4663-90bd-9e3eef483a9b">
+			<logger level="INFO" doc:name="Logger" doc:id="94505c3f-7e7a-4f82-9caf-0810b8fb68c0" message="Call to System API Started"/>
+		<set-variable value="#[attributes.headers]" doc:name="Set Variable" doc:id="4b6fd6d3-c8e9-41fe-9f52-6cdaa4921723" variableName="headers"/>
+		<logger level="INFO" doc:name="Logger" doc:id="db123a75-8de5-4a39-9f57-98d24462e1aa" message="#[output application/json
+---
+{
+	correlationId: vars.headers.'X-correlation-id',
+	sessionId: vars.headers.'X-session-id',
+	applicationName: app.name,
+	message: &quot;request received for getting all the contact details&quot;
+}]"/>
+		<ee:transform doc:name="Transform Message" doc:id="cce62835-6e38-4ba9-8939-edff2f6c7fee" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	firstName: payload.identification.firstName,
+	lastName: payload.identification.lastName,
+	dob: payload.identification.dateofBirth,
+	gender: payload.identification.gender,
+	title: payload.identification.title,
+	email: payload.identification.email
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="PUT" doc:name="Request" doc:id="52264e0b-135a-4fc5-b83b-a7f85e7d15ff" config-ref="Contact_SAPI_Request" path="${contactSAPI.putContact.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="16ce5970-08c5-4746-881e-facf00b569e1" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="77e4c017-d967-4471-b14f-d9c0ff3bda47" message="Call to System API Finised"/>
+	</flow>
+</mule>

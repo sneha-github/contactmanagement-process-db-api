@@ -1,0 +1,10 @@
+{
+   "communication":[
+      {
+         "communicationType":"email",
+         "contactId":1,
+         "value":"bfe@sample.com",
+         "preferred":true
+      }
+   ]
+}

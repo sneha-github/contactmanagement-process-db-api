@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <flow name="process-contactmanagement-db-api-main">
+        <http:listener config-ref="process-contactmanagement-db-api-httpListenerConfig" path="${http.path}">
+            <http:response statusCode="#[vars.httpStatus default 200]" />
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="process-contactmanagement-db-api-config" />
+        <error-handler ref="globalError_Handler" />
+    </flow>
+    <flow name="process-contactmanagement-db-api-console">
+        <http:listener config-ref="process-contactmanagement-db-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]" />
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="process-contactmanagement-db-api-config" />
+    </flow>
+    <flow name="put:\contacts\address:application\json:process-contactmanagement-db-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="0a3cf813-2296-446f-929f-9ab39f7a0a45" name="putAddressFlow" />
+    </flow>
+    <flow name="put:\contacts\communication:application\json:process-contactmanagement-db-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="3fcaf595-071e-4821-bc7b-28625defe07f" name="putCommunicationFlow" />
+    </flow>
+    <flow name="put:\contacts:application\json:process-contactmanagement-db-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="7873ecd5-7cad-4f17-bafd-f784ac656e04" name="putContactFlow" />
+    </flow>
+    <flow name="get:\contacts:process-contactmanagement-db-api-config">
+        <ee:transform doc:id="ecefd04e-c13c-4853-965c-ca3ca4bed2a9">
+            <ee:variables>
+                <ee:set-variable variableName="email"><![CDATA[attributes.uriParams.email]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Flow Reference" doc:id="e6733bee-55da-41b8-9811-205997facd5c" name="getContactbyEmailFlow" />
+    </flow>
+    <flow name="post:\contacts:application\json:process-contactmanagement-db-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="0ba3f092-6675-4d98-9f1c-a936510373f1" name="postContactFlow" />
+    </flow>
+    <flow name="delete:\contacts:process-contactmanagement-db-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="a4db192d-66b1-4b51-873a-7f09bb2a59ba" name="deleteContactFlow" />
+    </flow>
+</mule>

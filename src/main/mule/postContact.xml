@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="postContactFlow" doc:id="cf8c2245-d0fa-4c2d-a3d7-c2cccff155ea" >
+		<logger level="INFO" doc:name="Logger" doc:id="35b3fec6-e40e-4249-8db7-e4285c04b17a" message="Call to System API Started"/>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="f1239ae7-acd6-43d5-b7a7-f04486bce471" variableName="payload"/>
+		<ee:transform doc:name="Transform Message" doc:id="b6957880-5bb9-41a0-9eeb-21ef646692e2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	firstName: payload.identification.firstName,
+	lastName: payload.identification.lastName,
+	dob: payload.identification.dateofBirth,
+	gender: payload.identification.gender,
+	title: payload.identification.title,
+	email: payload.identification.email
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="8bdcb09c-78d9-41d9-86c5-e99b44e1221e" config-ref="Contact_SAPI_Request" path="${contactSAPI.postContact.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="295fd8bb-72e3-4d6e-918a-419ac37e44b7" message="#[payload]"/>
+		<set-variable value="#[payload.contactId]" doc:name="contactId" doc:id="413fc6b3-0e19-4c66-827b-330cfa8ccd2e" variableName="contactId"/>
+		<ee:transform doc:name="Transform Message" doc:id="feb0de99-2d62-4437-95f3-a3497bf599fc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	address: vars.payload.address map ( address , indexOfAddress ) -> {
+		addressType: address.typeOfAddress,
+		contactId: vars.contactId,
+		number: address.number as Number,
+		street: address.street,
+		unit: address.unit,
+		city: address.city,
+		state: address.state,
+		zipcode: address.zipcode
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="85adc3fa-a3a1-4db2-9a2f-b32c1e44806d" config-ref="Address_SAPI_Request" path="${addressSAPI.postAddress.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="0e770f73-6394-48e9-a792-fe3fe9d41b33" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="eea1411a-7db1-4bd6-88ae-eba7d43295b1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	communication: vars.payload.communication map ( communication , indexOfCommunication ) -> {
+		communicationType: communication.typeofCommunication,
+		contactId: vars.contactId as Number,
+		value: communication.value,
+		preferred: communication.preferred
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="77be7458-ca96-4384-b626-269b5b9e8a28" config-ref="Communication_SAPI_Request" path="${communicationSAPI.postCommunication.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="5ada83c8-cbca-4fe9-8cf5-c20eacc763a4" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="66a39d62-4bef-45dc-b008-5cadf49566ce" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "User Insert completed succesfully."
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

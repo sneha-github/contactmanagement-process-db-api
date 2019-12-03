@@ -1,0 +1,47 @@
+appId: "15900670"
+
+http:
+  host: "0.0.0.0"
+  port: "80"
+  path: "/api/*"
+  
+addressSAPI:
+  host: "system-address-db-api.us-e2.cloudhub.io"
+  port: "80"
+  getAddress: 
+    path: "/api/addressDetails"
+  deleteAddress:
+    path: "/api/addressDetails"
+  postAddress:
+    path: "/api/addressDetails"
+  putAddress:
+    path: "/api/addressDetails"
+
+communicationSAPI:
+  host: "system-communication-db-api.us-e2.cloudhub.io"
+  port: "80"
+  getCommunication:
+    path: "/api/communicationDetails"
+  deleteCommunication:
+    path: "/api/communicationDetails"
+  postCommunication:
+    path: "/api/communicationDetails"
+  putCommunication:
+    path: "/api/communicationDetails"
+
+contactSAPI:
+  host: "system-contact-db-api.us-e2.cloudhub.io"
+  port: "80"
+  deleteContact:
+    path: "/api/contactDetails"
+  getContact:
+    path: "/api/contactDetails"
+  postContact:
+    path: "/api/contactDetails"
+  putContact:
+    path: "/api/contactDetails"
+    
+getcontact:
+  host: ""
+  port: ""
+  path: ""

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="putAddressFlow" doc:id="5b6057bc-0639-4fc5-8fe4-d0de2d9657ff">
+	<logger level="INFO" doc:name="Logger" doc:id="3af3dc34-b0c6-4032-8161-791f7449d487" message="Call to System API Started"/>
+		<set-variable value="#[attributes.headers]" doc:name="headers" doc:id="2f0798a5-53ce-442a-8dbd-0c7ee3547dae" variableName="headers"/>
+		<set-variable value="#[payload]" doc:name="payload" doc:id="dfd5a841-0128-47ee-a3cd-4e8ecfc5273c" variableName="payload"/>
+		<set-variable value="#[payload.email]" doc:name="email" doc:id="e39db7bc-4c27-490b-9423-154e7f7bf387" variableName="email"/>
+		<flow-ref doc:name="Flow Reference" doc:id="e669cb23-4d19-4de6-8fc4-1c927931f711" name="getContactDetails_Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="b5655ffb-b362-4fed-98c9-5c04075a322c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	address: vars.payload.address map ( address , indexOfAddress ) -> {
+		addressType: address.addressType,
+		contactId: vars.contactId as Number,
+		number: address.number as Number,
+		street: address.street,
+		unit: address.unit,
+		city: address.city,
+		state: address.state,
+		zipcode: address.zipcode
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="c1775302-01b6-4845-a7ef-3082179dfdcb" message="#[output application/json
+---
+{
+	correlationId: vars.headers.'X-correlation-id',
+	sessionId: vars.headers.'X-session-id',
+	applicationName: app.name,
+	message: &quot;request received for getting all the contact details&quot;
+}]"/>
+		<http:request method="PUT" doc:name="Request" doc:id="54b0cd7f-5730-45f7-b21b-3c8fd12eaa93" config-ref="Address_SAPI_Request" path="${addressSAPI.putAddress.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+		
+</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="17c537bc-79ed-4267-b52e-be74ec58c7f2" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7a0eea3b-cb57-4509-a20c-85847c5991ae" message="Call to System API finised"/>
+	</flow>
+</mule>

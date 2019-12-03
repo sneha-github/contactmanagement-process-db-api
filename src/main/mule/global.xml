@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+		<http:listener-config name="process-contactmanagement-db-api-httpListenerConfig">
+        <http:listener-connection host="${http.host}" port="${http.port}" />
+    </http:listener-config>
+    <apikit:config name="process-contactmanagement-db-api-config" raml="process-contactmanagement-db-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+		<http:request-config name="Contact_SAPI_Request" doc:name="HTTP Request configuration" doc:id="2c0efd49-426c-4e48-9020-cc626a7b8839" >
+		<http:request-connection host="${contactSAPI.host}" port="${contactSAPI.port}" />
+	</http:request-config>
+	<http:request-config name="Address_SAPI_Request" doc:name="HTTP Request configuration" doc:id="b9e81b02-56aa-40ec-9c72-abfc93ae04ec" >
+		<http:request-connection host="${addressSAPI.host}" port="${addressSAPI.port}" />
+	</http:request-config>
+	<http:request-config name="Communication_SAPI_Request" doc:name="HTTP Request configuration" doc:id="b99438a0-cd7c-430b-bcb1-d998576533d9" >
+		<http:request-connection host="${communicationSAPI.host}" port="${communicationSAPI.port}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="1ee8116c-138b-4e51-ad24-04ba9e966f3a" file="${mule.env}.yaml" />
+	<api-gateway:autodiscovery apiId="${appId}" doc:name="API Autodiscovery" doc:id="7fcd43b4-e21f-457a-bba1-2785748ead4a" flowRef="process-contactmanagement-db-api-main" />
+	</mule>

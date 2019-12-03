@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="deleteContactFlow" doc:id="70abbcfb-a22a-4a61-896c-d621ebbc6699">
+			<logger level="INFO" doc:name="Logger" doc:id="dccbefa1-8254-4890-92ca-2ac5c35cdcac" message="Call to System API Started. "/>
+		<set-variable value="#[attributes.headers]" doc:name="Set Variable" doc:id="c1b145b4-d867-4628-ad4e-34cd91b8eef4" variableName="headers"/>
+		<set-variable value="#[attributes.queryParams.'email']" doc:name="Set Variable" doc:id="f2dcc096-7f4e-4de1-94a9-db4bb2944d95" variableName="email"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4aaf612f-5eba-4433-a0f4-87b3a89e46f3" message="#[output application/json
+---
+{
+	correlationId: vars.headers.'X-correlation-id',
+	sessionId: vars.headers.'X-session-id',
+	applicationName: app.name,
+	message: &quot;request received for getting all the contact details&quot;
+}]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="b13143c1-6645-4c93-92b1-d12676548341" name="getContactDetails_Sub_Flow"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="759b8a26-5512-4454-b2f9-b8433652dc0e" >
+			<http:request method="DELETE" doc:name="Request" doc:id="dd683b8a-bb83-4bc3-b8bd-2f9aa5766e1c" config-ref="Address_SAPI_Request" path="${addressSAPI.deleteAddress.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	contactId : vars.contactId
+}]]]></http:query-params>
+		</http:request>
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="7222e045-84d0-4851-9738-38664a1a5e92" message="#[payload]"/>
+				<until-successful maxRetries="5" doc:name="Until Successful" doc:id="99724843-a68f-4ac8-abcf-5f740d58c1c3" >
+			<http:request method="DELETE" doc:name="Request" doc:id="7e6d0509-8297-4d07-bd01-7486db569280" config-ref="Communication_SAPI_Request" path="${communicationSAPI.deleteCommunication.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	contactId : vars.contactId
+}]]]></http:query-params>
+		</http:request>
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="93dfa687-8dd5-4c4a-9889-738f25354232" message="#[payload]"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="f2cfc0b5-a75e-45e5-acc2-257b610e2bfb" >
+			<http:request method="DELETE" doc:name="Request" doc:id="53a050ca-0bf8-47e7-bbca-4ac030fa4a7b" config-ref="Contact_SAPI_Request" path="${contactSAPI.deleteContact.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	contactId : vars.contactId
+}]]]></http:query-params>
+		</http:request>
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="9d3191ec-8c6d-4ef6-8895-4a482bd024cf" message="Call to System API Finished. "/>
+	</flow>
+</mule>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+
+	<flow name="getContactbyEmailFlow" doc:id="37f53d78-c8d9-4c09-a2cf-974b469dd414" >
+		<logger level="INFO" doc:name="Logger" doc:id="1a8dc5a9-05b7-4041-931b-2c5a3b40960a" message="Call to System API Started"/>
+		<set-variable value="#[attributes.headers]" doc:name="Set Variable" doc:id="c03e6f53-31dd-4d14-83b4-29c971f5d677" variableName="headers"/>
+		<set-variable value="#[attributes.queryParams.email]" doc:name="Set Variable" doc:id="7c30acee-d0b4-4959-a965-dae437cdc8b5" variableName="email"/>
+		<logger level="INFO" doc:name="Logger" doc:id="27e46a4e-4e1c-46de-8ae4-0fb0a5b070c3" message="#[output application/json
+---
+{
+	correlationId: vars.headers.'X-correlation-id',
+	sessionId: vars.headers.'X-session-id',
+	applicationName: app.name,
+	message: &quot;request received for getting all the contact details&quot;
+}]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="5b8737d0-20b7-46c7-998e-01692d4ddb4b" name="getContactDetails_Sub_Flow"/>
+		<http:request method="GET" doc:name="Address SAPI Call" doc:id="042f156f-77b2-4f0f-bf0b-c10b404d21b2" config-ref="Address_SAPI_Request" path="${addressSAPI.getAddress.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	contactId : vars.contactId
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="ca1ca43a-8d0e-4f5d-8e33-394b1e2973cb" variableName="addressResponse"/>
+		<http:request method="GET" doc:name="Communication SAPI Call" doc:id="945f2237-04a5-47f4-82bd-d2973f9f73dd" config-ref="Communication_SAPI_Request" path="${communicationSAPI.getCommunication.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	contactId : vars.contactId
+}]]]></http:query-params>
+			
+		</http:request>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="9177a745-0049-48f3-a76f-7c5d03a1ef72" variableName="communicationResponse"/>
+		<ee:transform doc:name="Transform Message" doc:id="0ef8d131-dec0-4aba-b082-16ef31371ebb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	identification: {
+		firstName: vars.responseContact.firstName,
+		lastName: vars.responseContact.lastName,
+		dateofBirth: vars.responseContact.dob,
+		gender: vars.responseContact.gender,
+		title: vars.responseContact.title ,
+		email: vars.responseContact.email
+	},
+	address: vars.addressResponse.address map ( address , indexOfAddress ) -> {
+		typeOfAddress: address.addressType,
+		number: address.number,
+		street: address.street,
+		unit: address.unit,
+		city: address.city,
+		state: address.state,
+		zipcode: address.zipcode
+	},
+	communication: vars.communicationResponse.communication map ( communication , indexOfCommunication ) -> {
+		typeofCommunication: communication.communicationType,
+		value: communication.value,
+		preferred: communication.preferred as Boolean
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="4e699c89-acb8-43ca-9cb9-96cf129b7e01" message="Call to System API Finished"/>
+	</flow>
+	<sub-flow name="getContactDetails_Sub_Flow" doc:id="10984921-ff83-4bfe-a0f3-bdcb50271d77" >
+		<http:request method="GET" doc:name="Contact SAPI Call" doc:id="e748c970-d290-4f20-8129-3dfe8d8da5c6" config-ref="Contact_SAPI_Request" path="${contactSAPI.getContact.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	'X-correlation-id' : vars.headers.'X-correlation-id',
+	'X-session-id' : vars.headers.'X-session-id',
+	clientId : vars.headers.clientId,
+	clientSecretKey : vars.headers.clientSecretKey
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	email : vars.email
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="cdfdbdff-2f29-4b5a-9dd1-d2c01e2be025" variableName="responseContact" />
+		<set-variable value="#[payload.contactId]" doc:name="contactId" doc:id="a32b5799-9eee-4561-bcfe-4639698c12c8" variableName="contactId" />
+	</sub-flow>
+</mule>
